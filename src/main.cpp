@@ -182,8 +182,16 @@ void setup() {
     Serial.begin(115200);
     BLINKER_DEBUG.stream(Serial);
 
+    // 设置所有LED和水泵引脚为输出模式
+    for (int i = 0; i < numLEDs; i++) {
+        pinMode(ledPins[i], OUTPUT);
+        digitalWrite(ledPins[i], LOW);
+    }
+    pinMode(waterPumpPin, OUTPUT);
+    digitalWrite(waterPumpPin, HIGH);
+
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
 
     Blinker.begin(auth, ssid, pswd);
     Blinker.attachData(dataRead);
@@ -209,12 +217,6 @@ void setup() {
     Wire.beginTransmission(ADDR);
     Wire.write(0x01); // Power on
     Wire.endTransmission();
-
-    // 设置所有LED和水泵引脚为输出模式
-    for (int i = 0; i < numLEDs; i++) {
-        pinMode(ledPins[i], OUTPUT);
-    }
-    pinMode(waterPumpPin, OUTPUT);
 }
 
 void loop() {
