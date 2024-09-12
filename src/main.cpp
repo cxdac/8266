@@ -14,7 +14,7 @@ char auth[] = "559eb880b1cc";
 char ssid[] = "iQOO 9";
 char pswd[] = "5k6zaew9ebgxahr";
 
-bool autoControl = false;
+bool autoControl = true;
 
 void slider1_callback(int32_t);
 
@@ -56,7 +56,7 @@ BlinkerSlider Slider1("Slider_1", slider1_callback);
 DHT dht(DHTPIN, DHTTYPE);
 
 // 定义LED和水泵连接的数字引脚
-const int ledPins[] = {14,12,13,15}; // LED连接到D5, D6, D7, D8
+const int ledPins[] = {14, 12, 13, 15}; // LED连接到D5, D6, D7, D8
 const int numLEDs = sizeof(ledPins) / sizeof(ledPins[0]);
 const int waterPumpPin = 9; // 水泵连接的引脚
 
@@ -182,16 +182,6 @@ void setup() {
     Serial.begin(115200);
     BLINKER_DEBUG.stream(Serial);
 
-    // pinMode(12,OUTPUT);
-    // digitalWrite(12,HIGH);
-
-    for (int i = 0; i < numLEDs; i++) {
-        pinMode(ledPins[i], OUTPUT);
-        digitalWrite(ledPins[i], HIGH);
-    }
-    pinMode(waterPumpPin, OUTPUT);
-    digitalWrite(waterPumpPin, HIGH);
-
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
 
@@ -220,17 +210,11 @@ void setup() {
     Wire.write(0x01); // Power on
     Wire.endTransmission();
 
-    // if(Blinker.init()) {
-    //     // 设置所有LED和水泵引脚为输出模式
-    //     for (int i = 0; i < numLEDs; i++) {
-    //         pinMode(ledPins[i], OUTPUT);
-    //         digitalWrite(ledPins[i], HIGH);
-    //     }
-    //     pinMode(waterPumpPin, OUTPUT);
-    //     digitalWrite(waterPumpPin, HIGH);
-    // }
-
-
+    // 设置所有LED和水泵引脚为输出模式
+    for (int i = 0; i < numLEDs; i++) {
+        pinMode(ledPins[i], OUTPUT);
+    }
+    pinMode(waterPumpPin, OUTPUT);
 }
 
 void loop() {
