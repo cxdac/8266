@@ -23,7 +23,6 @@ char pswd[] = "5k6zaew9ebgxahr";
 
 bool autoControl = true;
 
-BlinkerButton Button1("btn-abc");
 BlinkerButton ledButton1("led1");
 BlinkerButton ledButton2("led2");
 BlinkerButton ledButton3("led3");
@@ -42,9 +41,9 @@ BlinkerNumber P("p");
 BlinkerNumber K("k");
 
 
-const int ledPins[] = {14, 12, 13, 15}; // LED连接到D5, D6, D7, D8
+const int ledPins[] = {14, 12, 13}; // LED连接到D5, D6, D7, S2
 const int numLEDs = sizeof(ledPins) / sizeof(ledPins[0]);
-const int waterPumpPin = 9; // 水泵连接的引脚
+const int waterPumpPin = 15; // 水泵连接的引脚D8
 
 // Define a structure to hold sensor data
 struct SensorData {
@@ -55,23 +54,20 @@ struct SensorData {
     float p;
     float k;
 };
+
 uint32_t read_time = 0;
-float humi_read = 50;
-float temp_read = 20;
-float light = 30;
-float humi_soil, temp_soil, ec_read, n_read, p_read, k_read;
-
-// Callback functions are omitted for brevity
-
-// void slider1_callback(int32_t value) {
-//     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-//     BLINKER_LOG("get slider value: ", value);
-// }
+float humi_read, temp_read, light, humi_soil, temp_soil, ec_read, n_read, p_read, k_read;
 
 void dataStorage() {
     Blinker.dataStorage("data0", temp_read);
     Blinker.dataStorage("data1", humi_read);
     Blinker.dataStorage("data2", light);
+    Blinker.dataStorage("data3", temp_soil);
+    Blinker.dataStorage("data4", humi_soil);
+    Blinker.dataStorage("data5", ec_read);
+    Blinker.dataStorage("data6", n_read);
+    Blinker.dataStorage("data7", p_read);
+    Blinker.dataStorage("data8", k_read);
 }
 
 void dataRead(const String &data) {
@@ -95,13 +91,6 @@ void heartbeat() {
     P.print(p_read);
     K.print(k_read);
 }
-
-// void sendRequest() {
-//     digitalWrite(SEND_PIN, HIGH); // Switch to send mode
-//     byte data_to_send[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x06, 0xC5, 0xC8};
-//     mySerial.write(data_to_send, sizeof(data_to_send));
-//     digitalWrite(SEND_PIN, LOW); // Switch back to receive mode
-// }
 
 SensorData readDeviceData() {
     SensorData sensorData = {0}; // Initialize with zero values
@@ -159,16 +148,6 @@ SensorData readDeviceData() {
         sensorData.n = n_value;
         sensorData.p = p_value;
         sensorData.k = k_value;
-
-        //
-        // // Read and process RS485 data
-        // byte data[12];
-        // mySerial.readBytes(data, 12);
-        //
-        // sensorData.ec = (data[3] << 8) | data[4]; // Assuming correct indexing based on the device's protocol
-        // sensorData.n = (data[5] << 8) | data[6];
-        // sensorData.p = (data[7] << 8) | data[8];
-        // sensorData.k = (data[9] << 8) | data[10];
     }
     return sensorData; // Return the struct containing the data
 }
@@ -195,18 +174,6 @@ float readLightSensor() {
     light = val / 1.2; // Convert to lx
     return light; // Return the light value
 }
-
-// // 按下按键即会执行该函数
-// void button1_callback(const String &state) {
-//     BLINKER_LOG("get button state: ", state);
-//     if (state == BLINKER_CMD_ON) {
-//         digitalWrite(LED_BUILTIN, LOW);
-//         Button1.print("on");
-//     } else if (state == BLINKER_CMD_OFF) {
-//         digitalWrite(LED_BUILTIN, HIGH);
-//         Button1.print("off");
-//     }
-// }
 
 void ledButton1_callback(const String &state) {
     BLINKER_LOG("get ledButton1 state: ", state);
@@ -294,7 +261,6 @@ void setup() {
     Blinker.attachHeartbeat(heartbeat);
     Blinker.attachDataStorage(dataStorage);
 
-    // Button1.attach(button1_callback);
     ledButton1.attach(ledButton1_callback);
     ledButton2.attach(ledButton2_callback);
     ledButton3.attach(ledButton3_callback);
@@ -314,7 +280,6 @@ void setup() {
     Wire.beginTransmission(ADDR);
     Wire.write(0x01); // Power on
     Wire.endTransmission();
-
 }
 
 void loop() {
@@ -365,35 +330,25 @@ void loop() {
                 digitalWrite(ledPins[0], HIGH);
                 digitalWrite(ledPins[1], HIGH);
                 digitalWrite(ledPins[2], HIGH);
-                digitalWrite(ledPins[3], HIGH);
             } else if (light < 60) {
                 digitalWrite(ledPins[0], HIGH);
                 digitalWrite(ledPins[1], HIGH);
-                digitalWrite(ledPins[2], HIGH);
-                digitalWrite(ledPins[3], LOW);
-            } else if (light < 90) {
-                digitalWrite(ledPins[2], HIGH);
-                digitalWrite(ledPins[3], HIGH);
-                digitalWrite(ledPins[0], LOW);
-                digitalWrite(ledPins[1], LOW);
-            } else if (light < 120) {
-                digitalWrite(ledPins[3], HIGH);
                 digitalWrite(ledPins[2], LOW);
+            } else if (light < 90) {
+                digitalWrite(ledPins[0], HIGH);
                 digitalWrite(ledPins[1], LOW);
-                digitalWrite(ledPins[0], LOW);
+                digitalWrite(ledPins[2], LOW);
             } else {
                 digitalWrite(ledPins[0], LOW);
                 digitalWrite(ledPins[1], LOW);
                 digitalWrite(ledPins[2], LOW);
-                digitalWrite(ledPins[3], LOW);
             }
 
-            if (humi_read < 50) {
+            if (humi_soil < 50) {
                 digitalWrite(waterPumpPin, HIGH);
             } else {
                 digitalWrite(waterPumpPin, LOW);
             }
-
         }
     }
 }
